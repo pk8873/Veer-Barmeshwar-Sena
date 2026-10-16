@@ -10,7 +10,7 @@ User = get_user_model()
 class SocialPlatformTests(TestCase):
     def setUp(self):
         self.staff = User.objects.create_user(username="adminuser", password="Test-password-42!", is_staff=True)
-        self.user = User.objects.create_user(username="member", password="Test-password-42!")
+        self.user = User.objects.create_user(username="member", email="member@example.com", password="Test-password-42!")
         self.post = Post.objects.create(
             author=self.staff,
             title="Public update",
@@ -18,6 +18,11 @@ class SocialPlatformTests(TestCase):
             status=Post.Status.PUBLISHED,
             published_at=timezone.now(),
         )
+
+    def test_member_can_log_in_with_email(self):
+        response = self.client.post(reverse("login"), {"username": "member@example.com", "password": "Test-password-42!"})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(int(self.client.session["_auth_user_id"]), self.user.pk)
 
     def test_published_post_visible(self):
         self.assertContains(self.client.get(reverse("home")), "Public update")
