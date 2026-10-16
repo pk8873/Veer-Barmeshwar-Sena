@@ -38,7 +38,7 @@ class SocialPlatformTests(TestCase):
 
     def test_published_post_visible(self):
         self.assertContains(self.client.get(reverse("home")), "Public update")
-        self.assertContains(self.client.get(reverse("home")), "cover-life.svg")
+        self.assertContains(self.client.get(reverse("home")), "cover-peace.svg")
 
     def test_draft_hidden_from_public(self):
         draft = Post.objects.create(author=self.staff, title="Private draft", body="Secret")
