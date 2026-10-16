@@ -18,7 +18,7 @@ INSTALLED_APPS = [
     "django.contrib.admin", "django.contrib.auth", "django.contrib.contenttypes",
     "django.contrib.sessions", "django.contrib.messages", "django.contrib.staticfiles",
     "allauth", "allauth.account", "allauth.socialaccount", "allauth.socialaccount.providers.google",
-    "posts",
+    "cloudinary_storage", "cloudinary", "posts",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
