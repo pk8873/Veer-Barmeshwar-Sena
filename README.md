@@ -43,23 +43,15 @@ python manage.py check --deploy
 Tests should be run in the target environment before launch. This project archive has not been deployed and no test result should be assumed until those commands pass.
 
 ## Create the production administrator
-The public navigation intentionally has no admin-login button. The Django admin is available directly at `/admin/`.
+The public navigation intentionally has no admin-login button. Use Django's built-in admin at `/admin/`; no separate admin page or custom admin creation command is required.
 
-For the first production admin, add these **private environment variables** in Render (do not commit the password to GitHub):
-- `ADMIN_USERNAME` — for example, `vbsadmin`
-- `ADMIN_EMAIL` — the administrator's real email address
-- `ADMIN_PASSWORD` — a unique password with at least 14 characters
-
-Then open the Render service Shell and run:
+Create the first administrator using the Render Shell:
 ```bash
-python manage.py bootstrap_admin
+python manage.py createsuperuser
 ```
-Sign in at `https://YOUR-SITE-DOMAIN/admin/` with the username and password you set in Render. After the account is created, remove the `ADMIN_PASSWORD` environment variable from Render. If that username already exists, the command refuses to overwrite it; use `python manage.py changepassword vbsadmin` in the Render Shell to reset it. The credentials cannot be set by a GitHub code push alone because production users live in the deployed database.
+Follow Django's prompts to set the username, email, and password. Then sign in at `https://YOUR-SITE-DOMAIN/admin/`. For an existing account, reset its password with `python manage.py changepassword YOUR_USERNAME`.
 
 Never allow public registration to set staff/superuser status. Add a registration workflow only after defining email verification, rate limits, and account-abuse controls.
-
-## Scheduled publication
-A production scheduler is required; Render web services do not automatically run future `scheduled_at` posts. A production-safe approach is a scheduled Render job or Celery worker that runs a command which atomically publishes due posts. Implement and test that job before promising scheduled publishing to administrators.
 
 ## Render deployment
 1. Push the project to your GitHub repository.
