@@ -5,13 +5,7 @@
 <section class="form-panel">
   <p class="eyebrow">POST EDITOR</p>
   <h1>{{ heading }}<span class="period">.</span></h1>
-  <p class="muted">Only authorized staff can publish posts. Upload or replace the post image and video below. Images: JPEG, PNG, or WebP (max 8 MB). Videos: MP4, WebM, or MOV (max 50 MB).</p>
-  {% if form.instance.pk %}
-    <div class="current-media">
-      {% if form.instance.image %}<p><strong>Current image</strong></p><img class="post-image" src="{{ form.instance.image.url }}" alt="{{ form.instance.image_alt|default:form.instance.title }}" style="max-width:420px"><p class="muted">Choose a new image below to replace it; leave the field empty to keep it.</p>{% endif %}
-      {% if form.instance.video %}<p><strong>Current video</strong></p><video class="post-video" controls playsinline style="max-width:420px;width:100%"><source src="{{ form.instance.video.url }}"></video><p class="muted">Choose a new video below to replace it; leave the field empty to keep it.</p>{% endif %}
-    </div>
-  {% endif %}
+  <p class="muted">Only authorized staff can publish posts. Upload a post image or video below. Images: JPEG, PNG, or WebP (max 8 MB). Videos: MP4, WebM, or MOV (max 50 MB).</p>
   <p class="media-storage-note">Storage note: Render's local filesystem may not persist uploaded media across deploys. Configure S3-compatible storage in Render environment settings for persistent uploaded images and videos.</p>
   <form method="post" enctype="multipart/form-data" class="editor-form">{% csrf_token %}{{ form.as_p }}<button class="button button-primary" type="submit">Save Post ↗</button></form>
 </section>
