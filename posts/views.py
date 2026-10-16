@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -7,25 +8,17 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.html import strip_tags
 from django.views.decorators.http import require_POST
-from .forms import CommentForm, PostForm
+from .forms import CommentForm, PostForm, SimpleMemberCreationForm
 from .models import AuditLog, Comment, Like, Post, Report, Share
 
 
 def log_activity(actor, action, object_type="", object_id="", **details):
-    AuditLog.objects.create(
-        actor=actor,
-        action=action,
-        object_type=object_type,
-        object_id=str(object_id),
-        details=details,
-    )
+    AuditLog.objects.create(actor=actor, action=action, object_type=object_type, object_id=str(object_id), details=details)
 
 
 def public_posts():
     now = timezone.now()
-    return Post.objects.filter(
-        status=Post.Status.PUBLISHED, published_at__lte=now
-    ).select_related("author").prefetch_related("likes", "comments", "shares")
+    return Post.objects.filter(status=Post.Status.PUBLISHED, published_at__lte=now).select_related("author").prefetch_related("likes", "comments", "shares")
 
 
 def home(request):
@@ -38,6 +31,18 @@ def home(request):
     if request.user.is_authenticated:
         liked_ids = set(Like.objects.filter(user=request.user, post__in=page.object_list).values_list("post_id", flat=True))
     return render(request, "posts/home.html", {"page": page, "liked_ids": liked_ids, "query": term})
+
+
+def register(request):
+    if request.user.is_authenticated:
+        return redirect("home")
+    form = SimpleMemberCreationForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        user = form.save()
+        login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+        messages.success(request, "आपका अकाउंट बन गया है। स्वागत है!")
+        return redirect(request.GET.get("next") or "home")
+    return render(request, "registration/register.html", {"form": form})
 
 
 def post_detail(request, slug):
