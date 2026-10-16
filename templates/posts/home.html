@@ -1,19 +1,32 @@
 {% extends "base.html" %}
+{% block title %}वीर बर्मेश्वर सेना | समाज, सेवा और एकता{% endblock %}
+{% block description %}वीर बर्मेश्वर सेना के आधिकारिक समाचार, स्थानीय अपडेट और समाज से जुड़ी जानकारी।{% endblock %}
 {% block content %}
-<section class="hero">
-<div class="hero-copy"><p class="eyebrow"><span class="live-dot"></span> COMMUNITY · UNITY · SERVICE</p><h1>One community.<br><em>One shared voice.</em></h1><p class="hero-desc">A home for announcements, community updates, and the moments that bring us together.</p><div class="hero-actions"><a class="button button-primary" href="#feed">Explore updates <span>↘</span></a><a class="button button-quiet" href="{% url 'about' %}">Our community</a></div><div class="hero-note"><span class="note-line"></span><span>PUBLIC UPDATES · COMMUNITY FIRST</span></div></div>
-<div class="hero-art" aria-label="Decorative layered geometric emblem"><div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><div class="emblem"><div class="emblem-inner"><span>VBS</span><small>एकता · सम्मान · सेवा</small></div></div><div class="float-tag tag-top">COMMUNITY<br><b>IN MOTION</b></div><div class="float-tag tag-bottom"><span class="tag-dot"></span> THE OFFICIAL FEED</div></div>
+<section class="local-hero">
+  <div class="local-hero-copy">
+    <p class="local-kicker"><span></span> समाज की आवाज़ · सेवा का संकल्प</p>
+    <h1>वीर बर्मेश्वर सेना<br><em>एकता • सम्मान • सेवा</em></h1>
+    <p class="local-intro">अपने समाज की खबरों, कार्यक्रमों और ज़रूरी सूचनाओं से जुड़े रहें। यह मंच आप सभी के लिए है — सरल, भरोसेमंद और सबकी भागीदारी के साथ।</p>
+    <div class="local-hero-actions"><a class="local-primary" href="#feed">ताज़ा अपडेट देखें <span>↓</span></a><a class="local-secondary" href="{% url 'about' %}">हमारे बारे में</a></div>
+    <div class="local-trust"><span>✓</span> आधिकारिक जानकारी · समुदाय के लिए</div>
+  </div>
+  <div class="local-hero-photo">
+    <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1100&q=85" alt="लोग साथ मिलकर समय बिताते हुए" fetchpriority="high">
+    <div class="photo-caption"><span class="photo-mark">वी</span><span><strong>हमारा समाज, हमारी पहचान</strong><small>मिलकर आगे बढ़ें</small></span></div>
+    <div class="photo-badge">एक साथ <b>मज़बूत</b></div>
+  </div>
 </section>
-<section id="feed" class="feed-layout"><div class="feed-main"><div class="section-head"><div><p class="eyebrow">THE LATEST</p><h2>Community updates<span class="period">.</span></h2></div><span class="section-index">01 / FEED</span></div>
-<form class="searchbar" method="get"><span>⌕</span><input name="q" value="{{ query }}" placeholder="Search announcements and updates…" aria-label="Search posts"><button>Search</button></form>
+<section class="local-values" aria-label="समुदाय के मूल्य"><div><span>01</span><strong>एकता</strong><small>आपसी जुड़ाव</small></div><div><span>02</span><strong>सम्मान</strong><small>हर व्यक्ति की गरिमा</small></div><div><span>03</span><strong>सेवा</strong><small>समाज के लिए योगदान</small></div></section>
+<section id="feed" class="feed-layout"><div class="feed-main"><div class="section-head"><div><p class="eyebrow">समाज से जुड़ी हर खबर</p><h2>ताज़ा अपडेट<span class="period">।</span></h2></div><span class="section-index">समाचार / सूचना</span></div>
+<form class="searchbar" method="get"><span>⌕</span><input name="q" value="{{ query }}" placeholder="खबर या सूचना खोजें…" aria-label="खबर या सूचना खोजें"><button>खोजें</button></form>
 {% for post in page.object_list %}
 <article class="post-card">
-<div class="post-top"><span class="post-avatar">{{ post.author.username|first|upper }}</span><div class="post-by"><strong>{{ post.author.get_full_name|default:post.author.username }}</strong><small>Community announcement · {{ post.published_at|date:"M j, Y" }}</small></div>{% if post.is_pinned %}<span class="pinned">✦ PINNED</span>{% endif %}</div>
+<div class="post-top"><span class="post-avatar">{{ post.author.username|first|upper }}</span><div class="post-by"><strong>{{ post.author.get_full_name|default:post.author.username }}</strong><small>आधिकारिक सूचना · {{ post.published_at|date:"j M Y" }}</small></div>{% if post.is_pinned %}<span class="pinned">✦ ज़रूरी</span>{% endif %}</div>
 <a class="post-title" href="{{ post.get_absolute_url }}">{{ post.title }}</a><p class="post-body">{{ post.body|truncatechars:300 }}</p>
 {% if post.image %}<a href="{{ post.get_absolute_url }}"><img class="post-image" src="{{ post.image.url }}" alt="{{ post.image_alt|default:post.title }}" loading="lazy"></a>{% endif %}
-<div class="post-actions"><form action="{% url 'toggle_like' post.slug %}" method="post">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="action-button {% if post.id in liked_ids %}liked{% endif %}" {% if not user.is_authenticated %}title="Log in to like"{% endif %}>♡ <span>{{ post.likes.count }} likes</span></button></form><a class="action-button" href="{{ post.get_absolute_url }}#comments">▤ <span>{{ post.comments.count }} comments</span></a><button class="action-button share-button" data-share-url="{{ request.scheme }}://{{ request.get_host }}{{ post.get_absolute_url }}">↗ <span>Share</span></button></div>
+<div class="post-actions"><form action="{% url 'toggle_like' post.slug %}" method="post">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="action-button {% if post.id in liked_ids %}liked{% endif %}" {% if not user.is_authenticated %}title="लाइक करने के लिए लॉगिन करें"{% endif %}>♡ <span>{{ post.likes.count }} पसंद</span></button></form><a class="action-button" href="{{ post.get_absolute_url }}#comments">▤ <span>{{ post.comments.count }} टिप्पणियाँ</span></a><button class="action-button share-button" data-share-url="{{ request.scheme }}://{{ request.get_host }}{{ post.get_absolute_url }}">↗ <span>शेयर करें</span></button></div>
 </article>
-{% empty %}<div class="empty-state"><div class="empty-symbol">✳</div><h3>{% if query %}No matching updates{% else %}The story starts here{% endif %}</h3><p>{% if query %}Try a different search term.{% else %}When an administrator publishes an update, it will appear here.{% endif %}</p></div>{% endfor %}
-{% if page.has_other_pages %}<div class="pagination">{% if page.has_previous %}<a href="?page={{ page.previous_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}">← Newer</a>{% endif %}<span>PAGE {{ page.number }} OF {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?page={{ page.next_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}">Older →</a>{% endif %}</div>{% endif %}
-</div><aside class="feed-aside"><div class="aside-card"><p class="eyebrow">OUR PURPOSE</p><div class="aside-emblem">✳</div><h3>Stronger together.</h3><p>A community space to share meaningful updates, stay informed, and take part in respectful conversation.</p><div class="aside-rule"></div><a href="{% url 'about' %}" class="aside-link">Learn about us <span>↗</span></a></div><div class="aside-quote"><span>“</span><p>Progress begins when we stand together with respect and purpose.</p><small>COMMUNITY PRINCIPLE</small></div></aside></section>
+{% empty %}<div class="empty-state"><div class="empty-symbol">✳</div><h3>{% if query %}कोई मेल खाती सूचना नहीं मिली{% else %}अपडेट जल्द यहाँ दिखाई देंगे{% endif %}</h3><p>{% if query %}दूसरे शब्दों से खोजकर देखें।{% else %}प्रशासक की ओर से प्रकाशित आधिकारिक सूचना यहाँ दिखाई देगी।{% endif %}</p></div>{% endfor %}
+{% if page.has_other_pages %}<div class="pagination">{% if page.has_previous %}<a href="?page={{ page.previous_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}">← नए अपडेट</a>{% endif %}<span>पेज {{ page.number }} / {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?page={{ page.next_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}">पुराने अपडेट →</a>{% endif %}</div>{% endif %}
+</div><aside class="feed-aside"><div class="aside-card"><p class="eyebrow">हमारा उद्देश्य</p><div class="aside-emblem">✳</div><h3>साथ चलें, आगे बढ़ें।</h3><p>समाज की ज़रूरी जानकारी साझा करें, स्थानीय कार्यक्रमों से जुड़े रहें और सम्मानजनक बातचीत को बढ़ावा दें।</p><div class="aside-rule"></div><a href="{% url 'about' %}" class="aside-link">हमारे बारे में जानें <span>↗</span></a></div><div class="aside-quote"><span>“</span><p>जब हम सम्मान और एकता के साथ खड़े होते हैं, तभी समाज आगे बढ़ता है।</p><small>हमारी साझा भावना</small></div></aside></section>
 {% endblock %}
