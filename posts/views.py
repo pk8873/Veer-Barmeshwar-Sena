@@ -160,9 +160,9 @@ def post_create(request):
             post.published_at = timezone.now()
         post.save()
         log_activity(request.user, "post_created", "Post", post.pk, title=post.title, status=post.status)
-        messages.success(request, "पोस्ट सेव हो गई।")
+        messages.success(request, "Post saved successfully.")
         return redirect("dashboard")
-    return render(request, "posts/post_form.html", {"form": form, "heading": "नई पोस्ट बनाएँ"})
+    return render(request, "posts/post_form.html", {"form": form, "heading": "Create New Post"})
 
 
 @user_passes_test(staff_required)
@@ -175,9 +175,9 @@ def post_edit(request, slug):
             updated.published_at = timezone.now()
         updated.save()
         log_activity(request.user, "post_updated", "Post", post.pk, title=post.title, status=post.status)
-        messages.success(request, "पोस्ट अपडेट हो गई।")
+        messages.success(request, "Post updated successfully.")
         return redirect("dashboard")
-    return render(request, "posts/post_form.html", {"form": form, "heading": "पोस्ट बदलें"})
+    return render(request, "posts/post_form.html", {"form": form, "heading": "Edit Post"})
 
 
 @user_passes_test(staff_required)
