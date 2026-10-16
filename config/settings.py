@@ -65,6 +65,7 @@ SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
+ACCOUNT_ADAPTER = "posts.adapters.ClosedAccountAdapter"
 ACCOUNT_LOGIN_METHODS = {"email"}
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 
