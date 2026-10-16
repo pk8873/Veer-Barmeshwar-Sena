@@ -52,11 +52,15 @@ Google sign-in is hidden until both environment variables are configured.
 Do not commit OAuth secrets to GitHub or send them in chat. Newly created Google accounts are regular members, not staff or superusers.
 
 ## Persistent image and video storage
-Render's ordinary web-service filesystem is ephemeral. For production media uploads, create a [Cloudinary](https://cloudinary.com/) account and set this environment variable in Render:
+Render's ordinary web-service filesystem is ephemeral. Before uploading important production media, configure an S3-compatible object-storage bucket (for example AWS S3 or Cloudflare R2) in Render Environment:
 
-`CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME`
+- `AWS_STORAGE_BUCKET_NAME`: your bucket name
+- `AWS_S3_REGION_NAME`: bucket region (for AWS S3)
+- `AWS_ACCESS_KEY_ID`: storage access key
+- `AWS_SECRET_ACCESS_KEY`: storage secret
+- `AWS_S3_ENDPOINT_URL`: optional endpoint for S3-compatible providers such as Cloudflare R2
 
-Use your actual Cloudinary values and keep the secret private. With this variable set, Django uses Cloudinary for uploaded media. Save and redeploy before uploading videos. Without persistent storage, media files stored on the web service can disappear after a redeploy or restart and may not be served in production. Existing media stored on the old filesystem must be uploaded again to Cloudinary if needed. The upload validation is a basic file-type/size check, not malware scanning or full file-signature validation.
+Keep credentials private. Save and redeploy before uploading videos. When `AWS_STORAGE_BUCKET_NAME` is set, Django uses `django-storages` S3 storage for media; otherwise it uses local filesystem storage, which is not persistent or reliably served by a standard Render web service. Existing media on the old filesystem must be uploaded again to the bucket if needed. The upload validation is a basic file-type/size check, not malware scanning or full file-signature validation.
 
 ## Tests and checks
 ```bash
