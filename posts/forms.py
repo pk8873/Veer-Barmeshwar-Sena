@@ -1,5 +1,34 @@
 from django import forms
+from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.forms import AuthenticationForm
 from .models import Comment, Post
+
+
+class EmailOrUsernameAuthenticationForm(AuthenticationForm):
+    username = forms.CharField(
+        label="ईमेल या यूज़रनेम",
+        widget=forms.TextInput(attrs={"autofocus": True, "autocomplete": "username"}),
+    )
+    password = forms.CharField(
+        label="पासवर्ड",
+        strip=False,
+        widget=forms.PasswordInput(attrs={"autocomplete": "current-password"}),
+    )
+
+    def clean(self):
+        username = self.cleaned_data.get("username")
+        password = self.cleaned_data.get("password")
+        if username and password:
+            UserModel = get_user_model()
+            if "@" in username:
+                matched_user = UserModel._default_manager.filter(email__iexact=username).order_by("pk").first()
+                if matched_user:
+                    username = matched_user.get_username()
+            self.user_cache = authenticate(self.request, username=username, password=password)
+            if self.user_cache is None:
+                raise self.get_invalid_login_error()
+            self.confirm_login_allowed(self.user_cache)
+        return self.cleaned_data
 
 
 class CommentForm(forms.ModelForm):
