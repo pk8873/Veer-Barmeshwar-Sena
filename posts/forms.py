@@ -23,7 +23,7 @@ class PostForm(forms.ModelForm):
         if image:
             if image.size > 8 * 1024 * 1024:
                 raise forms.ValidationError("तस्वीर 8 MB या उससे छोटी होनी चाहिए।")
-            if image.content_type not in {"image/jpeg", "image/png", "image/webp"}:
+            if hasattr(image, "content_type") and image.content_type not in {"image/jpeg", "image/png", "image/webp"}:
                 raise forms.ValidationError("केवल JPEG, PNG या WebP तस्वीर अपलोड करें।")
         return image
 
@@ -35,6 +35,6 @@ class PostForm(forms.ModelForm):
             allowed_types = {"video/mp4", "video/webm", "video/quicktime"}
             allowed_extensions = {".mp4", ".webm", ".mov"}
             name = video.name.lower()
-            if video.content_type not in allowed_types or not any(name.endswith(ext) for ext in allowed_extensions):
+            if (hasattr(video, "content_type") and video.content_type not in allowed_types) or not any(name.endswith(ext) for ext in allowed_extensions):
                 raise forms.ValidationError("केवल MP4, WebM या MOV वीडियो अपलोड करें।")
         return video
