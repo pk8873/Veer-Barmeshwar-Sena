@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}वीर बर्मेश्वर सेना | समाज, सेवा और एकता{% endblock %}
 {% block description %}वीर बर्मेश्वर सेना के समाचार, वीडियो, स्थानीय अपडेट और समाज से जुड़ी जानकारी।{% endblock %}
 {% block content %}
@@ -11,8 +12,8 @@
     <div class="local-trust"><span>✓</span> स्थानीय जानकारी · सम्मानजनक बातचीत</div>
   </div>
   <div class="local-hero-photo history-hero-photo">
-    <img src="https://akm-img-a-in.tosshub.com/aajtak/images/story/201206/brahmeshwar-mukhia_325_060112112505.jpg?size=948%3A533" alt="ब्रह्मेश्वर सिंह ‘मुखिया’ का समाचार-लेख में प्रकाशित चित्र" fetchpriority="high">
-    <div class="photo-caption"><span class="photo-mark">वी</span><span><strong>ब्रह्मेश्वर सिंह ‘मुखिया’</strong><small>ऐतिहासिक संदर्भ · स्रोत: Aaj Tak</small></span></div>
+    <img src="{% static 'images/posts/cover-life.svg' %}" alt="ब्रह्मेश्वर मुखिया के जीवन और ऐतिहासिक संदर्भ पर जानकारी" fetchpriority="high">
+    <div class="photo-caption"><span class="photo-mark">वी</span><span><strong>ब्रह्मेश्वर सिंह ‘मुखिया’</strong><small>ऐतिहासिक संदर्भ · स्रोत लेख पढ़ें</small></span></div>
     <a class="photo-badge" href="{% url 'about' %}">इतिहास और जानकारी <b>पढ़ें ↗</b></a>
   </div>
 </section>
@@ -20,12 +21,19 @@
 <section id="feed" class="feed-layout"><div class="feed-main"><div class="section-head"><div><p class="eyebrow">समाज से जुड़ी हर खबर</p><h2>ताज़ा अपडेट<span class="period">।</span></h2></div><span class="section-index">समाचार / वीडियो</span></div>
 <form class="searchbar" method="get"><span>⌕</span><input name="q" value="{{ query }}" placeholder="खबर, वीडियो या सूचना खोजें…" aria-label="खबर, वीडियो या सूचना खोजें"><button>खोजें</button></form>
 {% for post in page.object_list %}
-<article class="post-card">
+<article class="post-card" data-post-card="{{ post.id }}">
 <div class="post-top"><span class="post-avatar">{{ post.author.username|first|upper }}</span><div class="post-by"><strong>{{ post.author.get_full_name|default:post.author.username }}</strong><small>आधिकारिक अपडेट · {{ post.published_at|date:"j M Y" }}</small></div>{% if post.is_pinned %}<span class="pinned">✦ ज़रूरी</span>{% endif %}</div>
 <a class="post-title" href="{{ post.get_absolute_url }}">{{ post.title }}</a><p class="post-body">{{ post.body|truncatechars:300 }}</p>
-{% if post.image %}<a href="{{ post.get_absolute_url }}"><img class="post-image" src="{{ post.image.url }}" alt="{{ post.image_alt|default:post.title }}" loading="lazy"></a>{% endif %}
+{% if post.image %}<a href="{{ post.get_absolute_url }}"><img class="post-image" src="{{ post.image.url }}" alt="{{ post.image_alt|default:post.title }}" loading="lazy"></a>
+{% else %}<a href="{{ post.get_absolute_url }}" class="post-cover-link" aria-label="{{ post.title }} पढ़ें">{% if post.slug == "brahmeshwar-mukhiya-jeevan-parichay" %}<img class="post-image post-cover" src="{% static 'images/posts/cover-life.svg' %}" alt="{{ post.title }}" loading="lazy">{% elif post.slug == "ranvir-sena-bihar-1990s-history" %}<img class="post-image post-cover" src="{% static 'images/posts/cover-bihar.svg' %}" alt="{{ post.title }}" loading="lazy">{% elif post.slug == "bathani-tola-1996-yaad-aur-insaaf" %}<img class="post-image post-cover" src="{% static 'images/posts/cover-bathani.svg' %}" alt="{{ post.title }}" loading="lazy">{% elif post.slug == "jail-se-rihai-kisan-sangathan-2011-2012" %}<img class="post-image post-cover" src="{% static 'images/posts/cover-release.svg' %}" alt="{{ post.title }}" loading="lazy">{% else %}<img class="post-image post-cover" src="{% static 'images/posts/cover-peace.svg' %}" alt="{{ post.title }}" loading="lazy">{% endif %}</a>{% endif %}
 {% if post.video %}<video class="post-video" controls playsinline preload="metadata" aria-label="{{ post.title }}"><source src="{{ post.video.url }}">आपका ब्राउज़र वीडियो चलाने में सक्षम नहीं है।</video>{% endif %}
-<div class="post-actions">{% if user.is_authenticated %}<form action="{% url 'toggle_like' post.slug %}" method="post">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="action-button {% if post.id in liked_ids %}liked{% endif %}">♡ <span>{{ post.likes.count }} पसंद</span></button></form>{% else %}<a class="action-button" href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">♡ <span>{{ post.likes.count }} पसंद · लॉगिन</span></a>{% endif %}<a class="action-button" href="{{ post.get_absolute_url }}#comments">▤ <span>{{ post.comments.count }} टिप्पणियाँ</span></a>{% if user.is_authenticated %}<button class="action-button share-button" data-share-url="{{ request.scheme }}://{{ request.get_host }}{{ post.get_absolute_url }}" data-share-log-url="{% url 'share_post' post.slug %}">↗ <span>शेयर करें · {{ post.shares.count }}</span></button>{% else %}<a class="action-button" href="{% url 'login' %}?next={{ post.get_absolute_url|urlencode }}">↗ <span>शेयर · लॉगिन</span></a>{% endif %}</div>
+<div class="post-actions">
+{% if user.is_authenticated %}<form class="ajax-like-form" action="{% url 'toggle_like' post.slug %}" method="post">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" class="action-button {% if post.id in liked_ids %}liked{% endif %}" data-like-button aria-pressed="{% if post.id in liked_ids %}true{% else %}false{% endif %}">♡ <span data-like-count>{{ post.likes.count }}</span> पसंद</button></form>{% else %}<a class="action-button" href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">♡ <span>{{ post.likes.count }} पसंद · लॉगिन</span></a>{% endif %}
+<a class="action-button" href="{{ post.get_absolute_url }}#comments">▤ <span data-comment-count>{{ post.comments.count }}</span> टिप्पणियाँ</a>
+{% if user.is_authenticated %}<button class="action-button share-button" data-share-url="{{ request.scheme }}://{{ request.get_host }}{{ post.get_absolute_url }}" data-share-log-url="{% url 'share_post' post.slug %}">↗ <span>शेयर करें · {{ post.shares.count }}</span></button>{% else %}<a class="action-button" href="{% url 'login' %}?next={{ post.get_absolute_url|urlencode }}">↗ <span>शेयर · लॉगिन</span></a>{% endif %}
+</div>
+{% if user.is_authenticated %}<form class="inline-comment-form ajax-comment-form" method="post" action="{% url 'add_comment' post.slug %}">{% csrf_token %}<label class="visually-hidden" for="comment-{{ post.id }}">टिप्पणी</label><input id="comment-{{ post.id }}" name="body" maxlength="2000" required placeholder="इस पोस्ट पर अपनी टिप्पणी लिखें…"><button type="submit">भेजें ↗</button></form>{% else %}<p class="inline-login-hint"><a href="{% url 'login' %}?next={{ post.get_absolute_url|urlencode }}">लॉगिन करें</a> और टिप्पणी करें।</p>{% endif %}
+<div class="inline-comments" data-inline-comments aria-live="polite"></div>
 </article>
 {% empty %}<div class="empty-state"><div class="empty-symbol">✳</div><h3>{% if query %}कोई मेल खाती सूचना नहीं मिली{% else %}अपडेट जल्द यहाँ दिखाई देंगे{% endif %}</h3><p>{% if query %}दूसरे शब्दों से खोजकर देखें।{% else %}प्रशासक की ओर से प्रकाशित आधिकारिक सूचना यहाँ दिखाई देगी।{% endif %}</p></div>{% endfor %}
 {% if page.has_other_pages %}<div class="pagination">{% if page.has_previous %}<a href="?page={{ page.previous_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}">← नए अपडेट</a>{% endif %}<span>पेज {{ page.number }} / {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?page={{ page.next_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}">पुराने अपडेट →</a>{% endif %}</div>{% endif %}
