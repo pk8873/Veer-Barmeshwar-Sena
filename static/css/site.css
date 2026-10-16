@@ -76,3 +76,27 @@ footer{border-color:var(--line);color:#837765;font:13px var(--sans)}footer a:hov
 .activity-row p{margin:2px 0 0;font-size:12px;color:#817461;overflow-wrap:anywhere}
 .activity-row time{white-space:nowrap;font-size:11px;color:#93836d}
 @media(max-width:650px){.history-card{grid-template-columns:1fr;padding:14px;gap:14px}.history-card img{min-height:0;max-height:260px}.activity-row{flex-wrap:wrap}.activity-row time{margin-left:20px}.nav-login{padding:6px 10px}}
+
+
+/* Refined brand, illustrated post covers, and inline community actions */
+.brand-logo{display:block;width:48px;height:48px;flex:0 0 48px;object-fit:contain}
+.brand{display:flex;align-items:center;gap:11px}
+.brand-mark{display:none}
+.post-image{display:block;width:100%;max-height:560px;object-fit:cover;border-radius:12px;margin:12px 0 14px}
+.post-cover{aspect-ratio:16/9;background:#f6e7cf;border:1px solid #ead5b4}
+.post-cover-link{display:block}
+.inline-comment-form{display:flex;gap:9px;align-items:center;margin-top:13px;padding-top:13px;border-top:1px solid #f0e7d9}
+.inline-comment-form input{min-width:0;flex:1;padding:10px 12px;border:1px solid #e4d4bd;border-radius:9px;background:#fffdf8;color:#30271d;font:14px var(--sans)}
+.inline-comment-form button{flex:0 0 auto;padding:10px 14px;border:0;border-radius:9px;background:#26754f;color:#fff;font:600 13px var(--sans);cursor:pointer}
+.inline-comment-form button:disabled,.comment-form button:disabled,.ajax-like-form button:disabled{opacity:.6;cursor:wait}
+.inline-comments:empty{display:none}
+.inline-comments .comment{padding:12px 0 0;border-top:0}
+.inline-comments .comment-avatar{width:30px;height:30px;flex:0 0 30px;display:grid;place-items:center}
+.inline-comments .comment-content p{margin-bottom:0}
+.inline-login-hint{margin:12px 0 0;color:#827461;font-size:12px}
+.inline-login-hint a{color:#26754f;font-weight:700}
+.ajax-error,.form-feedback{margin:5px 0 0;color:#b33b25;font-size:12px}
+.form-feedback{color:#26754f}
+.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.ajax-like-form{display:inline-flex;margin:0}
+@media(max-width:560px){.brand-logo{width:40px;height:40px;flex-basis:40px}.brand{gap:8px}.inline-comment-form{gap:7px}.inline-comment-form input{font-size:13px;padding:9px}.inline-comment-form button{padding:9px 11px}}
