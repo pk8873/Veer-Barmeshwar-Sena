@@ -4,7 +4,7 @@ A Hindi-first, mobile-friendly community platform for official updates, images, 
 
 ## Community features
 - Anyone can read published posts without logging in.
-- Members can create a free account using a username and password; email is optional. Login accepts username or email plus password. No Google OAuth, paid login provider, or third-party account is required.
+- Members can create a free account using a username, mobile number and password; email is optional. Login accepts username or registered mobile number plus password. No Google OAuth, paid login provider, or third-party account is required.\n- Member sessions persist for up to one year and are refreshed on activity; members can explicitly log out at any time.\n- Like and comment actions use asynchronous requests, so members can interact with posts without being redirected or sent back to the first post.\n- The feed includes custom illustrated cover images when a post does not have an uploaded photo; staff can upload real images and videos in the post editor.
 - Members must sign in before liking, commenting, or sharing.
 - Public registration creates regular member accounts only. It never grants staff or superuser privileges.
 - Staff can publish posts, images and videos from the staff dashboard. Django Admin at `/admin/` remains available for full user management and moderation.
