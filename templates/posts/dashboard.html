@@ -1,1 +1,35 @@
-{% extends "base.html" %}{% block content %}<section class="dashboard-head"><p class="eyebrow">समुदाय प्रबंधन</p><h1>एडमिन डैशबोर्ड<span class="period">।</span></h1><p>पोस्ट, वीडियो, टिप्पणियाँ और सदस्यों की गतिविधि यहाँ देखें।</p><a class="button button-primary" href="{% url 'post_create' %}">＋ नई पोस्ट / वीडियो</a> <a class="button button-quiet" href="/admin/">पूरा Django Admin ↗</a></section><div class="stats-grid"><div class="stat-card"><small>कुल पोस्ट</small><strong>{{ post_count }}</strong></div><div class="stat-card"><small>प्रकाशित पोस्ट</small><strong>{{ published_count }}</strong></div><div class="stat-card"><small>पसंद</small><strong>{{ like_count }}</strong></div><div class="stat-card"><small>टिप्पणियाँ</small><strong>{{ comment_count }}</strong></div><div class="stat-card"><small>शेयर गतिविधियाँ</small><strong>{{ share_count }}</strong></div><div class="stat-card"><small>खुली रिपोर्ट</small><strong>{{ report_count }}</strong></div></div><section class="admin-list"><div class="section-head"><h2>हाल की पोस्ट</h2><a href="/admin/posts/post/">सभी पोस्ट ↗</a></div>{% for post in recent_posts %}<div class="admin-row"><div><strong>{{ post.title }}</strong><small>{{ post.get_status_display }} · {{ post.updated_at|date:"j M Y" }} · ♡ {{ post.likes.count }} · टिप्पणियाँ {{ post.comments.count }} · शेयर {{ post.shares.count }}</small></div><a href="{% url 'post_edit' post.slug %}">बदलें ↗</a><form method="post" action="{% url 'post_delete' post.slug %}" onsubmit="return confirm('क्या आप इस पोस्ट को हमेशा के लिए हटाना चाहते हैं?')">{% csrf_token %}<button class="text-button danger">हटाएँ</button></form></div>{% empty %}<p>अभी कोई पोस्ट नहीं है।</p>{% endfor %}</section><section class="admin-list"><div class="section-head"><h2>हाल की गतिविधियाँ</h2><a href="/admin/posts/auditlog/">पूरी गतिविधि ↗</a></div>{% for item in recent_activity %}<div class="activity-row"><span class="activity-dot"></span><div><strong>{{ item.get_action_display|default:item.action }}</strong><p>{% if item.actor %}{{ item.actor.get_full_name|default:item.actor.username }}{% else %}सिस्टम{% endif %}{% if item.details.title %} · {{ item.details.title }}{% elif item.details.post_title %} · {{ item.details.post_title }}{% endif %}</p></div><time>{{ item.created_at|date:"j M, g:i A" }}</time></div>{% empty %}<p>अभी कोई गतिविधि दर्ज नहीं हुई है।</p>{% endfor %}</section>{% endblock %}
+{% extends "base.html" %}
+{% block title %}Admin Dashboard | Veer Barmeshwar Sena{% endblock %}
+{% block content %}
+<section class="dashboard-head">
+  <p class="eyebrow">CONTENT MANAGEMENT</p>
+  <h1>Admin Dashboard<span class="period">.</span></h1>
+  <p>Manage posts, images, videos, comments, and member activity.</p>
+  <a class="button button-primary" href="{% url 'post_create' %}">＋ Create Post / Video</a>
+  <a class="button button-quiet" href="/admin/">Django Admin ↗</a>
+</section>
+<div class="stats-grid">
+  <div class="stat-card"><small>Total Posts</small><strong>{{ post_count }}</strong></div>
+  <div class="stat-card"><small>Published Posts</small><strong>{{ published_count }}</strong></div>
+  <div class="stat-card"><small>Likes</small><strong>{{ like_count }}</strong></div>
+  <div class="stat-card"><small>Comments</small><strong>{{ comment_count }}</strong></div>
+  <div class="stat-card"><small>Shares</small><strong>{{ share_count }}</strong></div>
+  <div class="stat-card"><small>Open Reports</small><strong>{{ report_count }}</strong></div>
+</div>
+<section class="admin-list">
+  <div class="section-head"><h2>Recent Posts</h2><a href="/admin/posts/post/">All Posts ↗</a></div>
+  {% for post in recent_posts %}
+  <div class="admin-row">
+    <div><strong>{{ post.title }}</strong><small>{{ post.get_status_display }} · {{ post.updated_at|date:"j M Y" }} · ♥ {{ post.likes.count }} · Comments {{ post.comments.count }} · Shares {{ post.shares.count }}</small></div>
+    <a href="{% url 'post_edit' post.slug %}">Edit ↗</a>
+    <form method="post" action="{% url 'post_delete' post.slug %}" onsubmit="return confirm('Are you sure you want to permanently delete this post?')">{% csrf_token %}<button class="text-button danger">Delete</button></form>
+  </div>
+  {% empty %}<p>No posts yet.</p>{% endfor %}
+</section>
+<section class="admin-list">
+  <div class="section-head"><h2>Recent Activity</h2><a href="/admin/posts/auditlog/">Full Activity ↗</a></div>
+  {% for item in recent_activity %}
+  <div class="activity-row"><span class="activity-dot"></span><div><strong>{{ item.get_action_display|default:item.action }}</strong><p>{% if item.actor %}{{ item.actor.get_full_name|default:item.actor.username }}{% else %}System{% endif %}{% if item.details.title %} · {{ item.details.title }}{% elif item.details.post_title %} · {{ item.details.post_title }}{% endif %}</p></div><time>{{ item.created_at|date:"j M, g:i A" }}</time></div>
+  {% empty %}<p>No activity recorded yet.</p>{% endfor %}
+</section>
+{% endblock %}
