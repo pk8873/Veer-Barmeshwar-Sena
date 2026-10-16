@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth import authenticate, get_user_model
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from .models import Comment, Post
 
 
@@ -29,6 +29,14 @@ class EmailOrUsernameAuthenticationForm(AuthenticationForm):
                 raise self.get_invalid_login_error()
             self.confirm_login_allowed(self.user_cache)
         return self.cleaned_data
+
+
+class SimpleMemberCreationForm(UserCreationForm):
+    email = forms.EmailField(label="ईमेल (वैकल्पिक)", required=False)
+
+    class Meta(UserCreationForm.Meta):
+        fields = ("username", "email", "password1", "password2")
+        labels = {"username": "यूज़रनेम"}
 
 
 class CommentForm(forms.ModelForm):
