@@ -13,13 +13,19 @@ if render_host and render_host not in ALLOWED_HOSTS:
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "").strip()
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "").strip()
 GOOGLE_LOGIN_ENABLED = bool(GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET)
+AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "").strip()
+AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "").strip()
+AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL", "").strip()
 
 INSTALLED_APPS = [
     "django.contrib.admin", "django.contrib.auth", "django.contrib.contenttypes",
     "django.contrib.sessions", "django.contrib.messages", "django.contrib.staticfiles", "django.contrib.sites",
     "allauth", "allauth.account", "allauth.socialaccount", "allauth.socialaccount.providers.google",
-    "cloudinary_storage", "cloudinary", "posts",
+    "posts",
 ]
+if AWS_STORAGE_BUCKET_NAME:
+    INSTALLED_APPS.append("storages")
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -82,8 +88,17 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else []
+MEDIA_STORAGE_OPTIONS = {"bucket_name": AWS_STORAGE_BUCKET_NAME, "file_overwrite": False}
+if AWS_S3_REGION_NAME:
+    MEDIA_STORAGE_OPTIONS["region_name"] = AWS_S3_REGION_NAME
+if AWS_S3_ENDPOINT_URL:
+    MEDIA_STORAGE_OPTIONS["endpoint_url"] = AWS_S3_ENDPOINT_URL
+
 STORAGES = {
-    "default": {"BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage"} if os.environ.get("CLOUDINARY_URL") else {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "default": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": MEDIA_STORAGE_OPTIONS,
+    } if AWS_STORAGE_BUCKET_NAME else {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage" if not DEBUG else "django.contrib.staticfiles.storage.StaticFilesStorage"},
 }
 MEDIA_URL = "media/"
