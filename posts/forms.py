@@ -77,6 +77,22 @@ class PostForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ["title", "body", "image", "video", "image_alt", "status", "scheduled_at", "is_pinned"]
+        labels = {
+            "title": "Post title",
+            "body": "Post content",
+            "image": "Post image (JPG, PNG, WebP)",
+            "video": "Post video (MP4, WebM, MOV)",
+            "image_alt": "Image description (accessibility)",
+            "status": "Post status",
+            "scheduled_at": "Schedule publication date and time",
+            "is_pinned": "Pin this post",
+        }
+        help_texts = {
+            "image": "Upload a new image to replace the current image. Leave empty to keep the current image.",
+            "video": "Upload a new video to replace the current video. Leave empty to keep the current video.",
+            "image_alt": "Short description of the image for screen readers.",
+            "scheduled_at": "Use this for scheduled posts.",
+        }
         widgets = {
             "body": forms.Textarea(attrs={"rows": 8}),
             "scheduled_at": forms.DateTimeInput(attrs={"type": "datetime-local"}),
@@ -86,19 +102,19 @@ class PostForm(forms.ModelForm):
         image = self.cleaned_data.get("image")
         if image:
             if image.size > 8 * 1024 * 1024:
-                raise forms.ValidationError("तस्वीर 8 MB या उससे छोटी होनी चाहिए।")
+                raise forms.ValidationError("Image must be 8 MB or smaller.")
             if hasattr(image, "content_type") and image.content_type not in {"image/jpeg", "image/png", "image/webp"}:
-                raise forms.ValidationError("केवल JPEG, PNG या WebP तस्वीर अपलोड करें।")
+                raise forms.ValidationError("Upload a JPEG, PNG, or WebP image only.")
         return image
 
     def clean_video(self):
         video = self.cleaned_data.get("video")
         if video:
             if video.size > 50 * 1024 * 1024:
-                raise forms.ValidationError("वीडियो 50 MB या उससे छोटा होना चाहिए।")
+                raise forms.ValidationError("Video must be 50 MB or smaller.")
             allowed_types = {"video/mp4", "video/webm", "video/quicktime"}
             allowed_extensions = {".mp4", ".webm", ".mov"}
             name = video.name.lower()
             if (hasattr(video, "content_type") and video.content_type not in allowed_types) or not any(name.endswith(ext) for ext in allowed_extensions):
-                raise forms.ValidationError("केवल MP4, WebM या MOV वीडियो अपलोड करें।")
+                raise forms.ValidationError("Upload an MP4, WebM, or MOV video only.")
         return video
