@@ -1,22 +1,16 @@
 # Veer Barmeshwar Sena — Django community platform
 
-A Hindi-first, mobile-friendly community publishing platform for Veer Barmeshwar Sena, with a warm saffron/green visual palette, community imagery, admin publishing, public feed, likes, comments, reports, search, and Render deployment configuration.
+A Hindi-first, mobile-friendly community platform for official updates, images, video posts, member comments, likes, shares, and moderation.
 
-## Branding note
-The public interface now uses Hindi-first copy and a warm, familiar saffron/green palette. The homepage photo is loaded from Unsplash; replace it with an organization-approved local event/community photo when one is available. Confirm official contact details and organization copy before launch.
-
-## Features included
-- Public chronological feed with search and pagination.
-- Only staff users can access the custom content dashboard and create/edit/delete posts.
-- Django admin for user management and comment/report moderation.
-- Draft, scheduled, published, and archived post states (scheduled publication needs the management command below).
-- Image upload with size and declared MIME validation.
-- Like/unlike with a database uniqueness constraint.
-- Comments, replies model, author/admin comment deletion, and post reporting.
-- Password login and password-reset view (configure production email).
-- Audit records for admin post changes.
-- Render Blueprint with PostgreSQL, WhiteNoise, build script, Gunicorn.
-- Automated baseline tests.
+## Community features
+- Public visitors can read published posts and videos without logging in.
+- Members must sign in before liking, commenting, or sharing. Google sign-in is optional and appears after OAuth credentials are configured.
+- Google sign-in can create a normal member account; it never grants staff or superuser privileges. Password-based public registration remains closed.
+- Staff can publish posts, images and videos from the staff dashboard. Django Admin at `/admin/` remains available for full user management and moderation.
+- Admin dashboard reports post counts, likes, comments, share actions, reports and recent member activity. Full activity records are available in Django Admin.
+- Draft, scheduled, published, and archived post states are supported.
+- Posts can be pinned, searched, liked/unliked, commented on, reported and shared.
+- Video uploads: MP4, WebM or MOV, up to 50 MB.
 
 ## Local setup
 Use Python 3.12+.
@@ -32,7 +26,37 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-The settings module reads environment variables directly. Set `SECRET_KEY` and `DEBUG=True` for local development. Do not use the development key in production.
+## Create the first Render administrator without Shell
+The build script supports a temporary, one-time setup using Render Environment variables:
+
+1. Open Render Dashboard → your web service → **Environment**.
+2. Add `DJANGO_ADMIN_USERNAME` (choose a new username), `DJANGO_ADMIN_PASSWORD` (strong, unique password), and optionally `DJANGO_ADMIN_EMAIL`.
+3. Save and wait for a successful deploy. The build runs migrations, then creates the superuser if that username does not already exist.
+4. Log in at `https://veer-barmeshwar-sena.onrender.com/admin/`.
+5. After successful login, remove all three `DJANGO_ADMIN_*` variables from Render Environment and save. Never put passwords in GitHub or share them in chat.
+6. This process deliberately does not modify an existing username or reset its password.
+
+## Enable Google sign-in on Render
+Google sign-in is hidden until both environment variables are configured.
+
+1. Open [Google Cloud Console](https://console.cloud.google.com/) and select/create a project.
+2. Configure the OAuth consent screen with the app name and contact details. While the app is in testing, add your own Google account as a test user.
+3. Create an OAuth Client ID of type **Web application**.
+4. Add this **Authorized JavaScript origin**: `https://veer-barmeshwar-sena.onrender.com`
+5. Add this **Authorized redirect URI** exactly: `https://veer-barmeshwar-sena.onrender.com/accounts/google/login/callback/`
+6. Copy the generated client ID and client secret into Render Dashboard → your web service → Environment:
+   - `GOOGLE_CLIENT_ID`
+   - `GOOGLE_CLIENT_SECRET`
+7. Save and redeploy. Visit `/accounts/login/` and test Google sign-in. For a custom domain, add that domain's HTTPS origin and callback URI in Google Cloud too.
+
+Do not commit OAuth secrets to GitHub or send them in chat. Newly created Google accounts are regular members, not staff or superusers.
+
+## Persistent image and video storage
+Render's ordinary web-service filesystem is ephemeral. For production media uploads, create a [Cloudinary](https://cloudinary.com/) account and set this environment variable in Render:
+
+`CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME`
+
+Use your actual Cloudinary values and keep the secret private. With this variable set, Django uses Cloudinary for uploaded media. Save and redeploy before uploading videos. Without persistent storage, media files stored on the web service can disappear after a redeploy or restart and may not be served in production. Existing media stored on the old filesystem must be uploaded again to Cloudinary if needed. The upload validation is a basic file-type/size check, not malware scanning or full file-signature validation.
 
 ## Tests and checks
 ```bash
@@ -40,52 +64,21 @@ python manage.py test
 python manage.py check
 python manage.py check --deploy
 ```
-Tests should be run in the target environment before launch. This project archive has not been deployed and no test result should be assumed until those commands pass.
 
-## Create the production administrator without Render Shell
-The public navigation intentionally has no admin-login button. Use Django's built-in admin at `/admin/`; do not add a public admin-registration page.
+## Production checklist
+- Set a strong `SECRET_KEY` in Render Environment.
+- Keep `DEBUG=False`, HTTPS, correct hosts and trusted origins.
+- Remove temporary `DJANGO_ADMIN_*` variables after initial admin setup.
+- Configure SMTP if password reset emails are needed.
+- Back up the production database and test restoration.
+- Review community moderation and privacy practices before launch.
 
-For a first-time setup when Render Shell is unavailable:
-
-1. Open the Render Dashboard and select this web service.
-2. Open **Environment** and temporarily add these variables. Use your own values; do not put the password in GitHub or share it in chat.
-   - `DJANGO_ADMIN_USERNAME`: a new admin username that does not already exist.
-   - `DJANGO_ADMIN_PASSWORD`: a strong, unique password (at least 15 characters recommended).
-   - `DJANGO_ADMIN_EMAIL`: your admin email address (optional).
-3. Save changes and trigger a deploy if Render does not start one automatically. The build script runs migrations, then creates the superuser only if that username is not already present.
-4. Wait for the deployment to finish successfully, then sign in at `https://veer-barmeshwar-sena.onrender.com/admin/` with the username and password you configured.
-5. After the first successful login, return to Render **Environment** and delete all three `DJANGO_ADMIN_*` variables, then save. This prevents credentials from remaining in the service environment. Do not delete `SECRET_KEY` or `DATABASE_URL`.
-6. If the username already exists, this bootstrap deliberately does not change its password or permissions. Choose a different username for first-time setup. For an existing account whose password is forgotten, use an authorized database/admin recovery method rather than making a public password-reset endpoint.
-
-If the build fails, check Render's deploy logs. Do not keep retrying with a password that has been exposed; rotate it in Render Environment.
-
-Never allow public registration to set staff/superuser status.
-
-## Render deployment
-1. Push the project to GitHub and connect the repository to Render.
-2. Review the PostgreSQL and web-service resources in `render.yaml`.
-3. Set any additional environment variables, including `ALLOWED_HOSTS` if using a custom domain and `CSRF_TRUSTED_ORIGINS` with full HTTPS origins.
-4. Ensure the build succeeds. The build script installs requirements, collects static files, applies migrations, and optionally creates the initial admin if the temporary `DJANGO_ADMIN_*` variables are present.
-5. Configure SMTP/email delivery for password resets.
-6. Test all workflows and inspect logs before announcing the site.
-
-## Security checklist before production
-- Rotate/set a strong `SECRET_KEY` through Render environment variables.
-- Remove the temporary `DJANGO_ADMIN_*` variables immediately after the first successful admin login.
-- Set correct `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`, HTTPS, and HSTS only after HTTPS is verified.
-- Configure SMTP and generic password-reset behavior.
-- Add request rate limiting (for example, a trusted proxy-aware middleware or platform/WAF control) for login, comments, and reports.
-- Review upload security: content-type checking here is a baseline, not full file-signature validation or malware scanning. Add signature inspection/re-encoding and storage isolation before accepting public uploads.
-- Add email verification, account registration, profile settings, notification preferences, and account deletion only with a documented privacy policy.
-- Review policy pages with the organization and applicable legal requirements.
-- Add an explicit reply form if public threaded replies are required; the model supports parent comments, but this starter does not yet expose a reply-posting workflow.
-- Add moderation/report handling screens and audit-log access controls.
-- Configure backups and test restoring the production database.
-- Run dependency auditing, `manage.py check --deploy`, and the full test suite before public launch.
+## Historical information
+The About page provides brief, attributed historical context about Brahmeshwar Singh (“Brahmeshwar Mukhiya”), based on published reporting. The account is intentionally neutral and notes the violence and legal context rather than glorifying caste-based violence. The portrait is credited to the original news report; confirm permissions and usage rights before commercial reuse.
 
 ## Project layout
-- `config/` settings and WSGI/ASGI
-- `posts/` posts, interactions, moderation models, views, admin, tests
+- `config/` settings and URLs
+- `posts/` models, views, forms, admin, tests and migrations
 - `templates/` server-rendered pages
 - `static/` CSS and JavaScript
 - `render.yaml` and `build.sh` deployment configuration

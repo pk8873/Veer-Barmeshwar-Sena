@@ -5,14 +5,14 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#fffaf1">
 <title>{% block title %}वीर बर्मेश्वर सेना{% endblock %}</title>
-<meta name="description" content="{% block description %}वीर बर्मेश्वर सेना के आधिकारिक समाचार, स्थानीय अपडेट और सार्वजनिक सूचनाएँ।{% endblock %}">
+<meta name="description" content="{% block description %}वीर बर्मेश्वर सेना के समाचार, वीडियो, स्थानीय अपडेट और सार्वजनिक सूचनाएँ।{% endblock %}">
 <link rel="stylesheet" href="{% static 'css/site.css' %}">
 <script defer src="{% static 'js/site.js' %}"></script>
 </head>
 <body>
 <header class="topbar">
 <a class="brand" href="{% url 'home' %}"><span class="brand-mark">वी</span><span><strong>वीर बर्मेश्वर सेना</strong><small>एकता · सम्मान · सेवा</small></span></a>
-<nav><a href="{% url 'home' %}">होम</a><a href="{% url 'about' %}">हमारे बारे में</a>{% if user.is_authenticated and user.is_staff %}<a href="{% url 'dashboard' %}" class="nav-manage">मैनेजमेंट</a>{% endif %}{% if user.is_authenticated %}<form action="{% url 'logout' %}" method="post" class="inline-form">{% csrf_token %}<button class="nav-button">लॉग आउट</button></form>{% endif %}</nav>
+<nav><a href="{% url 'home' %}">होम</a><a href="{% url 'about' %}">हमारे बारे में</a>{% if user.is_authenticated and user.is_staff %}<a href="{% url 'dashboard' %}" class="nav-manage">मैनेजमेंट</a>{% endif %}{% if user.is_authenticated %}<form action="{% url 'logout' %}" method="post" class="inline-form">{% csrf_token %}<button class="nav-button">लॉग आउट</button></form>{% else %}<a class="nav-login" href="{% url 'login' %}">लॉगिन</a>{% endif %}</nav>
 </header>
 <main class="shell">
 {% if messages %}<div class="messages">{% for message in messages %}<p class="message">{{ message }}</p>{% endfor %}</div>{% endif %}
