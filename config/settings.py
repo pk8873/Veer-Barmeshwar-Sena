@@ -66,6 +66,9 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
 if not DEBUG:
+    # Render terminates HTTPS at its proxy; trust its forwarded protocol header
+    # so Django admin login POSTs and secure redirects work behind the proxy.
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
