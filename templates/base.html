@@ -11,7 +11,7 @@
 </head>
 <body>
 <header class="topbar">
-<a class="brand" href="{% url 'home' %}"><span class="brand-mark">वी</span><span><strong>वीर बर्मेश्वर सेना</strong><small>एकता · सम्मान · सेवा</small></span></a>
+<a class="brand" href="{% url 'home' %}"><img class="brand-logo" src="{% static 'images/veer-barmeshwar-logo.svg' %}" alt="वीर बर्मेश्वर सेना लोगो"><span><strong>वीर बर्मेश्वर सेना</strong><small>एकता · सम्मान · सेवा</small></span></a>
 <nav><a href="{% url 'home' %}">होम</a><a href="{% url 'about' %}">हमारे बारे में</a>{% if user.is_authenticated and user.is_staff %}<a href="{% url 'dashboard' %}" class="nav-manage">मैनेजमेंट</a>{% endif %}{% if user.is_authenticated %}<form action="{% url 'logout' %}" method="post" class="inline-form">{% csrf_token %}<button class="nav-button">लॉग आउट</button></form>{% else %}<a class="nav-login" href="{% url 'login' %}">लॉगिन</a><a href="{% url 'register' %}">अकाउंट बनाएँ</a>{% endif %}</nav>
 </header>
 <main class="shell">
