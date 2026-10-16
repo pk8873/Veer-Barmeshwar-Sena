@@ -23,7 +23,7 @@ Use Python 3.12+.
 
 ```bash
 python -m venv .venv
-# Windows PowerShell: .venv\Scripts\Activate.ps1
+# Windows PowerShell: .venv\\Scripts\\Activate.ps1
 # macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
@@ -42,28 +42,36 @@ python manage.py check --deploy
 ```
 Tests should be run in the target environment before launch. This project archive has not been deployed and no test result should be assumed until those commands pass.
 
-## Create the production administrator
-The public navigation intentionally has no admin-login button. Use Django's built-in admin at `/admin/`; no separate admin page or custom admin creation command is required.
+## Create the production administrator without Render Shell
+The public navigation intentionally has no admin-login button. Use Django's built-in admin at `/admin/`; do not add a public admin-registration page.
 
-Create the first administrator using the Render Shell:
-```bash
-python manage.py createsuperuser
-```
-Follow Django's prompts to set the username, email, and password. Then sign in at `https://YOUR-SITE-DOMAIN/admin/`. For an existing account, reset its password with `python manage.py changepassword YOUR_USERNAME`.
+For a first-time setup when Render Shell is unavailable:
 
-Never allow public registration to set staff/superuser status. Add a registration workflow only after defining email verification, rate limits, and account-abuse controls.
+1. Open the Render Dashboard and select this web service.
+2. Open **Environment** and temporarily add these variables. Use your own values; do not put the password in GitHub or share it in chat.
+   - `DJANGO_ADMIN_USERNAME`: a new admin username that does not already exist.
+   - `DJANGO_ADMIN_PASSWORD`: a strong, unique password (at least 15 characters recommended).
+   - `DJANGO_ADMIN_EMAIL`: your admin email address (optional).
+3. Save changes and trigger a deploy if Render does not start one automatically. The build script runs migrations, then creates the superuser only if that username is not already present.
+4. Wait for the deployment to finish successfully, then sign in at `https://veer-barmeshwar-sena.onrender.com/admin/` with the username and password you configured.
+5. After the first successful login, return to Render **Environment** and delete all three `DJANGO_ADMIN_*` variables, then save. This prevents credentials from remaining in the service environment. Do not delete `SECRET_KEY` or `DATABASE_URL`.
+6. If the username already exists, this bootstrap deliberately does not change its password or permissions. Choose a different username for first-time setup. For an existing account whose password is forgotten, use an authorized database/admin recovery method rather than making a public password-reset endpoint.
+
+If the build fails, check Render's deploy logs. Do not keep retrying with a password that has been exposed; rotate it in Render Environment.
+
+Never allow public registration to set staff/superuser status.
 
 ## Render deployment
-1. Push the project to your GitHub repository.
-2. In Render, create a Blueprint and select this repository; review the PostgreSQL and web-service resources in `render.yaml`.
+1. Push the project to GitHub and connect the repository to Render.
+2. Review the PostgreSQL and web-service resources in `render.yaml`.
 3. Set any additional environment variables, including `ALLOWED_HOSTS` if using a custom domain and `CSRF_TRUSTED_ORIGINS` with full HTTPS origins.
-4. Ensure the build succeeds. The build script installs requirements, collects static files, and applies migrations.
-5. Create the first superuser using the Render Shell: `python manage.py createsuperuser`.
-6. Configure SMTP/email delivery for password resets.
-7. Test all workflows and inspect logs before announcing the site.
+4. Ensure the build succeeds. The build script installs requirements, collects static files, applies migrations, and optionally creates the initial admin if the temporary `DJANGO_ADMIN_*` variables are present.
+5. Configure SMTP/email delivery for password resets.
+6. Test all workflows and inspect logs before announcing the site.
 
 ## Security checklist before production
 - Rotate/set a strong `SECRET_KEY` through Render environment variables.
+- Remove the temporary `DJANGO_ADMIN_*` variables immediately after the first successful admin login.
 - Set correct `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`, HTTPS, and HSTS only after HTTPS is verified.
 - Configure SMTP and generic password-reset behavior.
 - Add request rate limiting (for example, a trusted proxy-aware middleware or platform/WAF control) for login, comments, and reports.
