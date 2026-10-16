@@ -3,17 +3,21 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.html import strip_tags
 from django.views.decorators.http import require_POST
 from .forms import CommentForm, PostForm, SimpleMemberCreationForm
-from .models import AuditLog, Comment, Like, Post, Report, Share
+from .models import AuditLog, Comment, Like, MemberProfile, Post, Report, Share
 
 
 def log_activity(actor, action, object_type="", object_id="", **details):
     AuditLog.objects.create(actor=actor, action=action, object_type=object_type, object_id=str(object_id), details=details)
+
+
+def is_ajax(request):
+    return request.headers.get("x-requested-with") == "XMLHttpRequest"
 
 
 def public_posts():
@@ -39,6 +43,7 @@ def register(request):
     form = SimpleMemberCreationForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         user = form.save()
+        MemberProfile.objects.create(user=user, phone=form.cleaned_data["phone"])
         login(request, user, backend="django.contrib.auth.backends.ModelBackend")
         messages.success(request, "आपका अकाउंट बन गया है। स्वागत है!")
         return redirect(request.GET.get("next") or "home")
@@ -60,9 +65,14 @@ def toggle_like(request, slug):
     like, created = Like.objects.get_or_create(post=post, user=request.user)
     if not created:
         like.delete()
+        liked = False
         log_activity(request.user, "post_unliked", "Post", post.pk, title=post.title)
     else:
+        liked = True
         log_activity(request.user, "post_liked", "Post", post.pk, title=post.title)
+    count = post.likes.count()
+    if is_ajax(request):
+        return JsonResponse({"ok": True, "liked": liked, "count": count, "post_slug": slug})
     return redirect(request.POST.get("next") or post.get_absolute_url())
 
 
@@ -74,7 +84,16 @@ def add_comment(request, slug):
     if form.is_valid():
         comment = Comment.objects.create(post=post, author=request.user, body=strip_tags(form.cleaned_data["body"]).strip())
         log_activity(request.user, "comment_added", "Comment", comment.pk, post_title=post.title)
+        if is_ajax(request):
+            return JsonResponse({
+                "ok": True, "id": comment.pk, "body": comment.body,
+                "author": request.user.get_full_name() or request.user.get_username(),
+                "created_at": timezone.localtime(comment.created_at).strftime("%d %b %Y · %I:%M %p"),
+                "count": post.comments.filter(is_hidden=False).count(),
+            })
     else:
+        if is_ajax(request):
+            return JsonResponse({"ok": False, "error": "कृपया 1 से 2000 अक्षरों की टिप्पणी लिखें।"}, status=400)
         messages.error(request, "कृपया टिप्पणी जाँचकर दोबारा भेजें।")
     return redirect(post.get_absolute_url() + "#comments")
 
