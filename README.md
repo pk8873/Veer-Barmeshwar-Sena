@@ -3,9 +3,10 @@
 A Hindi-first, mobile-friendly community platform for official updates, images, video posts, member comments, likes, shares, and moderation.
 
 ## Community features
-- Public users can read published posts and videos without logging in.
-- Members must sign in before liking, commenting, or sharing. Google sign-in is optional and appears after Google OAuth credentials are configured.
-- Staff users can publish posts, images and videos from the staff dashboard. Django Admin at `/admin/` remains available for full user management and moderation.
+- Public visitors can read published posts and videos without logging in.
+- Members must sign in before liking, commenting, or sharing. Google sign-in is optional and appears after OAuth credentials are configured.
+- Google sign-in can create a normal member account; it never grants staff or superuser privileges. Password-based public registration remains closed.
+- Staff can publish posts, images and videos from the staff dashboard. Django Admin at `/admin/` remains available for full user management and moderation.
 - Admin dashboard reports post counts, likes, comments, share actions, reports and recent member activity. Full activity records are available in Django Admin.
 - Draft, scheduled, published, and archived post states are supported.
 - Posts can be pinned, searched, liked/unliked, commented on, reported and shared.
@@ -25,6 +26,16 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
+## Create the first Render administrator without Shell
+The build script supports a temporary, one-time setup using Render Environment variables:
+
+1. Open Render Dashboard → your web service → **Environment**.
+2. Add `DJANGO_ADMIN_USERNAME` (choose a new username), `DJANGO_ADMIN_PASSWORD` (strong, unique password), and optionally `DJANGO_ADMIN_EMAIL`.
+3. Save and wait for a successful deploy. The build runs migrations, then creates the superuser if that username does not already exist.
+4. Log in at `https://veer-barmeshwar-sena.onrender.com/admin/`.
+5. After successful login, remove all three `DJANGO_ADMIN_*` variables from Render Environment and save. Never put passwords in GitHub or share them in chat.
+6. This process deliberately does not modify an existing username or reset its password.
+
 ## Enable Google sign-in on Render
 Google sign-in is hidden until both environment variables are configured.
 
@@ -38,10 +49,14 @@ Google sign-in is hidden until both environment variables are configured.
    - `GOOGLE_CLIENT_SECRET`
 7. Save and redeploy. Visit `/accounts/login/` and test Google sign-in. For a custom domain, add that domain's HTTPS origin and callback URI in Google Cloud too.
 
-Do not commit OAuth secrets to GitHub or send them in chat. Newly created Google accounts are regular members, not staff or superusers. Never let social login grant admin permissions.
+Do not commit OAuth secrets to GitHub or send them in chat. Newly created Google accounts are regular members, not staff or superusers.
 
-## Video and media storage warning
-The post editor accepts image and video uploads. Render's ordinary web-service filesystem is ephemeral; uploaded media can disappear after a redeploy or restart unless persistent storage is configured. Before publishing important videos, connect durable storage such as Cloudinary, Amazon S3, or a supported Render Persistent Disk and configure Django's media storage for it. Upload validation is a basic file-type/size check, not malware scanning or full file-signature validation.
+## Persistent image and video storage
+Render's ordinary web-service filesystem is ephemeral. For production media uploads, create a [Cloudinary](https://cloudinary.com/) account and set this environment variable in Render:
+
+`CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME`
+
+Use your actual Cloudinary values and keep the secret private. With this variable set, Django uses Cloudinary for uploaded media. Save and redeploy before uploading videos. Without persistent storage, media files stored on the web service can disappear after a redeploy or restart and may not be served in production. Existing media stored on the old filesystem must be uploaded again to Cloudinary if needed. The upload validation is a basic file-type/size check, not malware scanning or full file-signature validation.
 
 ## Tests and checks
 ```bash
@@ -53,7 +68,7 @@ python manage.py check --deploy
 ## Production checklist
 - Set a strong `SECRET_KEY` in Render Environment.
 - Keep `DEBUG=False`, HTTPS, correct hosts and trusted origins.
-- Remove any temporary admin-bootstrap environment variables after initial admin setup.
+- Remove temporary `DJANGO_ADMIN_*` variables after initial admin setup.
 - Configure SMTP if password reset emails are needed.
 - Back up the production database and test restoration.
 - Review community moderation and privacy practices before launch.
