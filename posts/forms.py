@@ -1,30 +1,44 @@
+import re
+
 from django import forms
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from .models import Comment, Post
+from .models import Comment, Post, MemberProfile
+
+
+def normalize_phone(value):
+    digits = re.sub(r"\D", "", value or "")
+    if len(digits) == 12 and digits.startswith("91"):
+        digits = digits[2:]
+    return digits
 
 
 class EmailOrUsernameAuthenticationForm(AuthenticationForm):
     username = forms.CharField(
-        label="ईमेल या यूज़रनेम",
-        widget=forms.TextInput(attrs={"autofocus": True, "autocomplete": "username"}),
+        label="मोबाइल नंबर या नाम",
+        widget=forms.TextInput(attrs={"autofocus": True, "autocomplete": "username", "placeholder": "मोबाइल नंबर या यूज़रनेम", "inputmode": "text"}),
     )
     password = forms.CharField(
         label="पासवर्ड",
         strip=False,
-        widget=forms.PasswordInput(attrs={"autocomplete": "current-password"}),
+        widget=forms.PasswordInput(attrs={"autocomplete": "current-password", "placeholder": "अपना पासवर्ड लिखें"}),
     )
 
     def clean(self):
-        username = self.cleaned_data.get("username")
+        identifier = (self.cleaned_data.get("username") or "").strip()
         password = self.cleaned_data.get("password")
-        if username and password:
+        if identifier and password:
             UserModel = get_user_model()
-            if "@" in username:
-                matched_user = UserModel._default_manager.filter(email__iexact=username).order_by("pk").first()
-                if matched_user:
-                    username = matched_user.get_username()
-            self.user_cache = authenticate(self.request, username=username, password=password)
+            user = UserModel._default_manager.filter(username__iexact=identifier).first()
+            if user is None and "@" in identifier:
+                user = UserModel._default_manager.filter(email__iexact=identifier).order_by("pk").first()
+            if user is None:
+                phone = normalize_phone(identifier)
+                if len(phone) >= 10:
+                    profile = MemberProfile.objects.select_related("user").filter(phone=phone).first()
+                    user = profile.user if profile else None
+            login_name = user.get_username() if user else identifier
+            self.user_cache = authenticate(self.request, username=login_name, password=password)
             if self.user_cache is None:
                 raise self.get_invalid_login_error()
             self.confirm_login_allowed(self.user_cache)
@@ -32,11 +46,24 @@ class EmailOrUsernameAuthenticationForm(AuthenticationForm):
 
 
 class SimpleMemberCreationForm(UserCreationForm):
+    phone = forms.CharField(
+        label="मोबाइल नंबर",
+        max_length=20,
+        widget=forms.TextInput(attrs={"autocomplete": "tel", "inputmode": "tel", "placeholder": "10 अंकों का मोबाइल नंबर"}),
+    )
     email = forms.EmailField(label="ईमेल (वैकल्पिक)", required=False)
 
     class Meta(UserCreationForm.Meta):
-        fields = ("username", "email", "password1", "password2")
-        labels = {"username": "यूज़रनेम"}
+        fields = ("username", "phone", "email", "password1", "password2")
+        labels = {"username": "आपका नाम या यूज़रनेम"}
+
+    def clean_phone(self):
+        phone = normalize_phone(self.cleaned_data.get("phone"))
+        if len(phone) != 10:
+            raise forms.ValidationError("कृपया 10 अंकों का भारतीय मोबाइल नंबर लिखें।")
+        if MemberProfile.objects.filter(phone=phone).exists():
+            raise forms.ValidationError("यह मोबाइल नंबर पहले से रजिस्टर्ड है। लॉगिन करें।")
+        return phone
 
 
 class CommentForm(forms.ModelForm):
