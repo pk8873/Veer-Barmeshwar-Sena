@@ -1,0 +1,23 @@
+databases:
+  - name: veer-barmeshwar-db
+    plan: free
+    databaseName: veer_barmeshwar
+    user: veer_barmeshwar
+services:
+  - type: web
+    name: veer-barmeshwar-sena
+    runtime: python
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: gunicorn config.wsgi:application
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: veer-barmeshwar-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: PYTHON_VERSION
+        value: 3.12.8

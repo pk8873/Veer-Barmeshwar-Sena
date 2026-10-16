@@ -1,0 +1,23 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101a2b">
+<title>{% block title %}Veer Barmeshwar Sena{% endblock %}</title>
+<meta name="description" content="{% block description %}Community updates, announcements and public posts from Veer Barmeshwar Sena.{% endblock %}">
+<link rel="stylesheet" href="{% static 'css/site.css' %}">
+<script defer src="{% static 'js/site.js' %}"></script>
+</head>
+<body>
+<div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+<header class="topbar">
+<a class="brand" href="{% url 'home' %}"><span class="brand-mark">V<span>B</span></span><span><strong>VEER BARMESHWAR</strong><small>SENA · COMMUNITY NETWORK</small></span></a>
+<nav><a href="{% url 'home' %}">Home</a><a href="{% url 'about' %}">About</a>{% if user.is_authenticated %}<a href="{% url 'dashboard' %}" class="nav-manage">Manage</a><form action="{% url 'logout' %}" method="post" class="inline-form">{% csrf_token %}<button class="nav-button">Log out</button></form>{% else %}<a class="nav-cta" href="{% url 'login' %}">Member login ↗</a>{% endif %}</nav>
+</header>
+<main class="shell">
+{% if messages %}<div class="messages">{% for message in messages %}<p class="message">{{ message }}</p>{% endfor %}</div>{% endif %}
+{% block content %}{% endblock %}
+</main>
+<footer><span>© {% now "Y" %} Veer Barmeshwar Sena</span><span><a href="{% url 'privacy' %}">Privacy</a><a href="{% url 'terms' %}">Terms</a><a href="{% url 'about' %}">About</a></span></footer>
+</body></html>
