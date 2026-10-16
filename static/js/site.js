@@ -74,7 +74,7 @@ document.addEventListener("submit", async (event) => {
         if (empty) empty.remove();
         appendComment(target, data);
       }
-      updateCount(card || document, "[data-comment-count]", data.count);
+      updateCount(inlineTarget ? card : (document.querySelector("#comments") || document), "[data-comment-count]", data.count);
       form.reset();
       if (feedback) feedback.textContent = "आपकी टिप्पणी प्रकाशित हो गई।";
     }
