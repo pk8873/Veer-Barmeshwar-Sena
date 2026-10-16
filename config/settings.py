@@ -16,7 +16,7 @@ GOOGLE_LOGIN_ENABLED = bool(GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET)
 
 INSTALLED_APPS = [
     "django.contrib.admin", "django.contrib.auth", "django.contrib.contenttypes",
-    "django.contrib.sessions", "django.contrib.messages", "django.contrib.staticfiles",
+    "django.contrib.sessions", "django.contrib.messages", "django.contrib.staticfiles", "django.contrib.sites",
     "allauth", "allauth.account", "allauth.socialaccount", "allauth.socialaccount.providers.google",
     "cloudinary_storage", "cloudinary", "posts",
 ]
@@ -89,6 +89,7 @@ STORAGES = {
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+SITE_ID = 1
 if not DEBUG:
     # Render terminates HTTPS at its proxy; trust its forwarded protocol header
     # so Django admin login POSTs and secure redirects work behind the proxy.
