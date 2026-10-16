@@ -1,4 +1,5 @@
 from textwrap import dedent
+from datetime import timedelta
 
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
@@ -117,7 +118,7 @@ class Command(BaseCommand):
                 "title": item["title"],
                 "body": item["body"].strip(),
                 "status": Post.Status.PUBLISHED,
-                "published_at": now - timezone.timedelta(minutes=(len(POSTS) - index)),
+                "published_at": now - timedelta(minutes=(len(POSTS) - index)),
                 "is_pinned": item.get("pinned", False),
             }
             _, created = Post.objects.update_or_create(slug=item["slug"], defaults=defaults)
